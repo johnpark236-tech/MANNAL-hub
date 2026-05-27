@@ -106,6 +106,28 @@
       padding: 48px 20px;
     }
 
+    /* ── 🛒 신규 추가된 환영 이미지 배너 스타일 ── */
+    .welcome-banner-container {
+      width: 100%;
+      max-width: 500px; /* 모바일 전단지 형태의 고해상도 이미지이므로 가로 최대 크기를 컴팩트하게 제한 */
+      margin: 0 auto 40px; /* 중앙 정렬 및 아래 레이아웃과의 여백 확보 */
+      border-radius: 24px; /* 부드러운 라운딩 처리 */
+      box-shadow: 0 12px 32px rgba(255,83,118,0.1); /* 세련된 미세 그림자 */
+      overflow: hidden;
+      background: var(--white);
+      border: 2px solid var(--white); /* 깔끔한 테두리 마감 효과 */
+      transition: transform 0.3s ease;
+    }
+    .welcome-banner-container:hover {
+      transform: scale(1.02); /* 마우스 호버 시 자연스럽게 반응 */
+    }
+    .welcome-banner-img {
+      width: 100%;
+      height: auto;
+      display: block;
+      object-fit: cover;
+    }
+
     /* ── 섹션 레이블 ── */
     .section-label {
       font-size: 11px;
@@ -310,6 +332,12 @@
   </header>
 
   <main>
+
+    <!-- 🛒 [신규 배치] 첫 시작 환영의 일러스트 이미지 카드 영역 -->
+    <div class="welcome-banner-container">
+      <!-- 이미지 파일명인 input_file_0.png를 경로로 지정해 둡니다. 나중에 파일 위치에 맞춰 확장자나 세부 경로를 커스텀하실 수 있습니다. -->
+      <img src="input_file_0.png" alt="Welcome to MANNAL" class="welcome-banner-img">
+    </div>
 
     <!-- 학습 앱 섹션 -->
     <div class="section-label">📚 학습 앱</div>
