@@ -8,125 +8,109 @@
     <script src="https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <style>
-        body { background-color: #0d1117; color: #ffffff; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Helvetica, Arial, sans-serif; }
+        /* 🎨 학생들을 위한 산뜻하고 깔끔한 밀크 화이트 & 어두운 텍스트 기본 세팅 */
+        body { background-color: #f8f9fa; color: #2d3748; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Helvetica, Arial, sans-serif; }
     </style>
 </head>
 <body class="flex flex-col min-h-screen">
 
-    <!-- 헤더 영역 -->
-    <header class="border-b border-pink-500 bg-[#161b22] py-8 text-center px-4">
-        <h1 class="text-3xl font-bold text-white tracking-wide mb-2">🚀 MANNAL 한국어 학습!DOCTYPE html>
-<html lang="ko">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>MANNAL 한국어 학습</title>
-    <!-- Tailwind CSS 플레이그라운드 CDN -->
-    <script src="https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4"></script>
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-    <style>
-        body { background-color: #0d1117; color: #ffffff; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Helvetica, Arial, sans-serif; }
-    </style>
-</head>
-<body class="flex flex-col min-h-screen">
-
-    <!-- 헤더 영역 -->
-    <header class="border-b border-pink-500 bg-[#161b22] py-8 text-center px-4">
-        <h1 class="text-3xl font-bold text-white tracking-wide mb-2">🚀 MANNAL 한국어 학습</h1>
-        <p class="text-gray-300 text-sm max-w-md mx-auto">학습하실 앱을 선택하세요~</p>
+    <!-- 헤더 영역 (이미지의 화사한 핑크-레드 포인트 라인 반영) -->
+    <header class="border-b-4 border-[#ff5376] bg-white py-10 text-center px-4 shadow-sm">
+        <h1 class="text-3xl font-extrabold text-[#2d3748] tracking-wide mb-2">🚀 MANNAL 한국어 학습</h1>
+        <p class="text-gray-500 text-base font-medium max-w-md mx-auto">학습하실 앱을 선택하세요~ ✨</p>
     </header>
 
     <!-- 메인 대시보드 영역 -->
     <main class="flex-grow max-w-6xl w-full mx-auto px-6 py-12">
         
-        <!-- [1] 학습 카드 Grid -->
-        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mb-16">
+        <!-- [1] 학습 카드 Grid (이미지처럼 알록달록하고 귀여운 색상 적용) -->
+        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8 mb-16">
 
-            <!-- 카드 1: MANNAL_4_ad 사자성어 -->
+            <!-- 카드 1: MANNAL_4_ad 사자성어 (신선한 오렌지 옐로우 톤) -->
             <a href="https://johnpark236-tech.github.io/MANNAL-4_ad" target="_blank" 
-               class="group block bg-[#161b22] border border-gray-800 rounded-xl p-6 transition-all duration-300 hover:border-pink-500 hover:-translate-y-1 shadow-md">
+               class="group block bg-[#ff9f1c] border-2 border-[#ff9f1c] rounded-2xl p-7 transition-all duration-300 hover:scale-105 shadow-lg hover:shadow-xl">
                 <div class="flex items-center justify-between mb-4">
-                    <span class="text-xs font-semibold px-2.5 py-1 rounded bg-pink-950 text-pink-400 border border-pink-800">사자성어</span>
+                    <span class="text-xs font-bold px-3 py-1 rounded-full bg-white text-[#ff9f1c] shadow-sm">🎯 추천 학습</span>
                 </div>
-                <h3 class="text-lg font-bold text-white mb-2 group-hover:text-pink-400 transition-colors">사자성어 학습</h3>
-                <p class="text-sm text-gray-300 leading-relaxed">초급, 중급, 고급</p>
+                <h3 class="text-xl font-extrabold text-white mb-2 tracking-tight">사자성어 학습</h3>
+                <p class="text-sm text-amber-50 font-medium leading-relaxed">초급, 중급, 고급 단계별 정복!</p>
             </a>
 
-            <!-- 카드 2: MANNAL_Korean_card_game- -->
+            <!-- 카드 2: MANNAL_Korean_card_game- (산뜻하고 러블리한 핑크 톤) -->
             <a href="https://johnpark236-tech.github.io/MANNAL_Korean_card_game-" target="_blank" 
-               class="group block bg-[#161b22] border border-pink-500 rounded-xl p-6 transition-all duration-300 hover:border-pink-500 hover:-translate-y-1 shadow-md">
+               class="group block bg-[#ff5376] border-2 border-[#ff5376] rounded-2xl p-7 transition-all duration-300 hover:scale-105 shadow-lg hover:shadow-xl">
                 <div class="flex items-center justify-between mb-4">
-                    <span class="text-xs font-semibold px-2.5 py-1 rounded bg-pink-950 text-pink-400 border border-pink-800">교재 단어</span>
+                    <span class="text-xs font-bold px-3 py-1 rounded-full bg-white text-[#ff5376] shadow-sm">📚 교과 과정</span>
                 </div>
-                <h3 class="text-lg font-bold text-white mb-2 group-hover:text-pink-400 transition-colors">교재 단어 학습</h3>
-                <p class="text-sm text-gray-300 leading-relaxed">한국어 교재 1과 부터 16과</p>
+                <h3 class="text-xl font-extrabold text-white mb-2 tracking-tight">교재 단어 학습</h3>
+                <p class="text-sm text-pink-50 font-medium leading-relaxed">한국어 교재 1과 부터 16과 완벽 암기</p>
             </a>
 
-            <!-- 카드 3: MANNAL_word_da 다의어 -->
+            <!-- 카드 3: MANNAL_word_da 다의어 (차분하면서도 예쁜 브라운-체리 톤) -->
             <a href="https://johnpark236-tech.github.io/MANNAL_word_da/" target="_blank" 
-               class="group block bg-[#161b22] border border-gray-800 rounded-xl p-6 transition-all duration-300 hover:border-pink-500 hover:-translate-y-1 shadow-md">
+               class="group block bg-[#a06a6a] border-2 border-[#a06a6a] rounded-2xl p-7 transition-all duration-300 hover:scale-105 shadow-lg hover:shadow-xl">
                 <div class="flex items-center justify-between mb-4">
-                    <span class="text-xs font-semibold px-2.5 py-1 rounded bg-pink-950 text-pink-400 border border-pink-800">다의어</span>
+                    <span class="text-xs font-bold px-3 py-1 rounded-full bg-white text-[#a06a6a] shadow-sm">💡 필수 어휘</span>
                 </div>
-                <h3 class="text-lg font-bold text-white mb-2 group-hover:text-pink-400 transition-colors">다의어 단어 학습</h3>
-                <p class="text-sm text-gray-300 leading-relaxed">다의어 집중 공부</p>
+                <h3 class="text-xl font-extrabold text-white mb-2 tracking-tight">다의어 단어 학습</h3>
+                <p class="text-sm text-rose-50 font-medium leading-relaxed">알수록 힘이 되는 다의어 집중 공부</p>
             </a>
 
         </div>
 
-        <hr class="border-gray-800 my-8">
+        <hr class="border-gray-200 my-8">
 
-        <!-- [2] 광고 영역 (순차적으로 세로 배치) -->
+        <!-- [2] 광고 영역 (학습 대시보드 컨셉에 맞춰 정돈된 화이트 카드 스타일) -->
         <div class="max-w-4xl mx-auto space-y-4">
-            <p class="text-base text-white font-mono tracking-wider text-center mb-2">이 포스팅은 쿠팡 파트너스 활동의 일환으로, 이에 따른 일정액의 수수료를 제공받습니다.</p>
+            <p class="text-base text-gray-700 font-semibold tracking-wider text-center mb-2">이 포스팅은 쿠팡 파트너스 활동의 일환으로, 이에 따른 일정액의 수수료를 제공받습니다.</p>
             
             <!-- 광고 1: TOPIK 교재 -->
             <a href="https://link.coupang.com/a/dT2sTaFol2" target="_blank" referrerpolicy="unsafe-url"
-               class="flex items-center justify-between bg-[#161b22] border border-gray-800 rounded-xl p-5 transition-all hover:border-orange-500 hover:bg-[#1f242c] shadow-md group">
+               class="flex items-center justify-between bg-white border-2 border-gray-100 rounded-2xl p-5 transition-all hover:border-[#ff9f1c] shadow-sm hover:shadow-md group">
                 <div class="flex items-center space-x-4">
-                    <div class="w-12 h-12 rounded-lg bg-orange-950/50 flex items-center justify-center border border-orange-900 text-orange-400 text-xl flex-shrink-0">
+                    <div class="w-12 h-12 rounded-xl bg-orange-100 flex items-center justify-center border border-orange-200 text-[#ff9f1c] text-xl flex-shrink-0">
                         <i class="fa-solid fa-book-open"></i>
                     </div>
-                    <p class="text-sm text-gray-200 leading-relaxed group-hover:text-white transition-colors">
-                        합격을 위한 완벽한 실전 대비! 📚<br><b>2026 한국어능력시험 TOPIK 2(토픽 2) 실전 모의고사 : 모의고사 7회</b> 교재 정보!
+                    <p class="text-sm text-gray-700 font-medium leading-relaxed group-hover:text-black transition-colors">
+                        합격을 위한 완벽한 실전 대비! 📚<br><b class="text-gray-900">2026 한국어능력시험 TOPIK 2(토픽 2) 실전 모의고사 : 모의고사 7회</b> 교재 정보!
                     </p>
                 </div>
             </a>
 
             <!-- 광고 2: 전기포트 -->
             <a href="https://link.coupang.com/a/dW4cu8BV7s" target="_blank" referrerpolicy="unsafe-url"
-               class="flex items-center justify-between bg-[#161b22] border border-gray-800 rounded-xl p-5 transition-all hover:border-yellow-500 hover:bg-[#1f242c] shadow-md group">
+               class="flex items-center justify-between bg-white border-2 border-gray-100 rounded-2xl p-5 transition-all hover:border-yellow-500 shadow-sm hover:shadow-md group">
                 <div class="flex items-center space-x-4">
-                    <div class="w-12 h-12 rounded-lg bg-yellow-950/50 flex items-center justify-center border border-yellow-900 text-yellow-400 text-xl flex-shrink-0">
+                    <div class="w-12 h-12 rounded-xl bg-yellow-50 flex items-center justify-center border border-yellow-200 text-yellow-600 text-xl flex-shrink-0">
                         <i class="fa-solid fa-mug-hot"></i>
                     </div>
-                    <p class="text-sm text-gray-200 leading-relaxed group-hover:text-white transition-colors">
-                        빠르고 안전하게 끓이는 필수 주방템! ☕<br><b>전기포트, 커피포트, 초고속 스테인리스 전기주전자 1.8L</b> 최저가 가성비 제품!
+                    <p class="text-sm text-gray-700 font-medium leading-relaxed group-hover:text-black transition-colors">
+                        빠르고 안전하게 끓이는 필수 주방템! ☕<br><b class="text-gray-900">전기포트, 커피포트, 초고속 스테인리스 전기주전자 1.8L</b> 최저가 가성비 제품!
                     </p>
                 </div>
             </a>
 
             <!-- 광고 3: 벌룬 버뮤다 팬츠 -->
             <a href="https://link.coupang.com/a/dXdB4A4elM" target="_blank" referrerpolicy="unsafe-url"
-               class="flex items-center justify-between bg-[#161b22] border border-gray-800 rounded-xl p-5 transition-all hover:border-sky-500 hover:bg-[#1f242c] shadow-md group">
+               class="flex items-center justify-between bg-white border-2 border-gray-100 rounded-2xl p-5 transition-all hover:border-[#ff5376] shadow-sm hover:shadow-md group">
                 <div class="flex items-center space-x-4">
-                    <div class="w-12 h-12 rounded-lg bg-sky-950/50 flex items-center justify-center border border-sky-900 text-sky-400 text-xl flex-shrink-0">
+                    <div class="w-12 h-12 rounded-xl bg-pink-50 flex items-center justify-center border border-pink-100 text-[#ff5376] text-xl flex-shrink-0">
                         <i class="fa-solid fa-shirt"></i>
                     </div>
-                    <p class="text-sm text-gray-200 leading-relaxed group-hover:text-white transition-colors">
-                        트렌디하고 편안한 데일리 룩 완성! 🩳<br><b>FITOJIM 남자 반바지 원턱 와이드 벌룬 버뮤다 팬츠 트레이닝 바지</b> 핏 예쁜 핫템 정보!
+                    <p class="text-sm text-gray-700 font-medium leading-relaxed group-hover:text-black transition-colors">
+                        트렌디하고 편안한 데일리 룩 완성! 🩳<br><b class="text-gray-900">FITOJIM 남자 반바지 원턱 와이드 벌룬 버뮤다 팬츠 트레이닝 바지</b> 핏 예쁜 핫템 정보!
                     </p>
                 </div>
             </a>
 
             <!-- 쿠팡 파트너스 필수 표기 문구 -->
-            <p class="text-[10px] text-gray-600 text-center mt-4">이 포스팅은 쿠팡 파트너스 활동의 일환으로, 이에 따른 일정액의 수수료를 제공받습니다.</p>
+            <p class="text-[11px] text-gray-400 text-center mt-4">이 포스팅은 쿠팡 파트너스 활동의 일환으로, 이에 따른 일정액의 수수료를 제공받습니다.</p>
         </div>
 
     </main>
 
     <!-- 푸터 영역 -->
-    <footer class="border-t border-gray-800 bg-[#0d1117] py-6 text-center text-xs text-gray-400">
+    <footer class="border-t border-gray-200 bg-white py-6 text-center text-xs text-gray-500 shadow-inner">
         <p>© 2026 johnpark236-tech. Powered by GitHub Pages.</p>
     </footer>
 
