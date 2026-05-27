@@ -13,7 +13,7 @@
 </head>
 <body class="flex flex-col min-h-screen">
 
-    <!-- 헤더 영역 (하단 바 색상 핑크 반영) -->
+    <!-- 헤더 영역 -->
     <header class="border-b border-pink-500 bg-[#161b22] py-8 text-center px-4">
         <h1 class="text-3xl font-bold text-white tracking-wide mb-2">🚀 MANNAL 학습 Room</h1>
         <p class="text-gray-300 text-sm max-w-md mx-auto">학습하실 앱을 선택하세요~</p>
@@ -21,8 +21,9 @@
 
     <!-- 메인 대시보드 영역 -->
     <main class="flex-grow max-w-6xl w-full mx-auto px-6 py-12">
-        <!-- 학습 카드 Grid -->
-        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mb-12">
+        
+        <!-- [1] 학습 카드 Grid -->
+        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mb-16">
 
             <!-- 카드 1: MANNAL_4_ad 사자성어 -->
             <a href="https://johnpark236-tech.github.io/MANNAL-4_ad" target="_blank" 
@@ -36,7 +37,7 @@
 
             <!-- 카드 2: MANNAL_Korean_card_game- -->
             <a href="https://johnpark236-tech.github.io/MANNAL_Korean_card_game-" target="_blank" 
-               class="group block bg-[#161b22] border border-gray-800 rounded-xl p-6 transition-all duration-300 hover:border-pink-500 hover:-translate-y-1 shadow-md">
+               class="group block bg-[#161b22] border border-pink-500 rounded-xl p-6 transition-all duration-300 hover:border-pink-500 hover:-translate-y-1 shadow-md">
                 <div class="flex items-center justify-between mb-4">
                     <span class="text-xs font-semibold px-2.5 py-1 rounded bg-pink-950 text-pink-400 border border-pink-800">교재 단어</span>
                 </div>
@@ -56,24 +57,62 @@
 
         </div>
 
-        <!-- 2) 광고 영역 추가 (대시보드 하단에 순차적으로 배치) -->
-        <div class="w-full max-w-4xl mx-auto mt-8 border border-gray-800 rounded-xl bg-[#161b22] p-4 text-center">
-            <p class="text-xs text-gray-500 mb-2 font-mono tracking-wider">ADVERTISEMENT</p>
+        <hr class="border-gray-800 my-8">
+
+        <!-- [2] 광고 영역 (순차적으로 세로 배치) -->
+        <div class="max-w-4xl mx-auto space-y-4">
+            <p class="text-xs text-gray-500 font-mono tracking-wider text-center mb-2">SHOPPING & PARTNERS AD</p>
             
-            <!-- 실제 구글 애드센스나 광고 스크립트 코드를 이 자리에 그대로 넣어주시면 됩니다 -->
-            <div class="min-h-[100px] flex items-center justify-center border border-dashed border-gray-700 rounded bg-[#0d1117]">
-                <!-- 예시용 애드센스 플레이스홀더 (추후 발급받은 script 코드로 대체 가능) -->
-                <ins class="adsbygoogle"
-                     style="display:block"
-                     data-ad-client="ca-pub-xxxxxxxxxxxxxxxx"
-                     data-ad-slot="xxxxxxxxxx"
-                     data-ad-format="auto"
-                     data-full-width-responsive="true"></ins>
-                <script>
-                     (adsbygoogle = window.adsbygoogle || []).push({});
-                </script>
-                <span class="text-sm text-gray-400"><i class="fa-solid fa-rectangle-ad mr-2"></i> 여기에 광고 스크립트 코드를 추가하세요</span>
-            </div>
+            <!-- 광고 1: TOPIK 교재 -->
+            <a href="https://link.coupang.com/a/dT2sTaFol2" target="_blank" referrerpolicy="unsafe-url"
+               class="flex items-center justify-between bg-[#161b22] border border-gray-800 rounded-xl p-5 transition-all hover:border-orange-500 hover:bg-[#1f242c] shadow-md group">
+                <div class="flex items-center space-x-4">
+                    <div class="w-12 h-12 rounded-lg bg-orange-950/50 flex items-center justify-center border border-orange-900 text-orange-400 text-xl flex-shrink-0">
+                        <i class="fa-solid fa-book-open"></i>
+                    </div>
+                    <p class="text-sm text-gray-200 leading-relaxed group-hover:text-white transition-colors">
+                        합격을 위한 완벽한 실전 대비! 📚<br><b>2026 한국어능력시험 TOPIK 2(토픽 2) 실전 모의고사 : 모의고사 7회</b> 교재 정보를 확인해보세요!
+                    </p>
+                </div>
+                <div class="text-xs font-semibold px-3 py-1.5 rounded-lg bg-orange-600 text-white flex-shrink-0 ml-4 group-hover:bg-orange-500 transition-colors">
+                    보러가기 <i class="fa-solid fa-chevron-right ml-1"></i>
+                </div>
+            </a>
+
+            <!-- 광고 2: 전기포트 -->
+            <a href="https://link.coupang.com/a/dW4cu8BV7s" target="_blank" referrerpolicy="unsafe-url"
+               class="flex items-center justify-between bg-[#161b22] border border-gray-800 rounded-xl p-5 transition-all hover:border-yellow-500 hover:bg-[#1f242c] shadow-md group">
+                <div class="flex items-center space-x-4">
+                    <div class="w-12 h-12 rounded-lg bg-yellow-950/50 flex items-center justify-center border border-yellow-900 text-yellow-400 text-xl flex-shrink-0">
+                        <i class="fa-solid fa-mug-hot"></i>
+                    </div>
+                    <p class="text-sm text-gray-200 leading-relaxed group-hover:text-white transition-colors">
+                        빠르고 안전하게 끓이는 필수 주방템! ☕<br><b>전기포트, 커피포트, 초고속 스테인리스 전기주전자 1.8L</b> 최저가 가성비 제품을 만나보세요!
+                    </p>
+                </div>
+                <div class="text-xs font-semibold px-3 py-1.5 rounded-lg bg-yellow-600 text-white flex-shrink-0 ml-4 group-hover:bg-yellow-500 transition-colors">
+                    보러가기 <i class="fa-solid fa-chevron-right ml-1"></i>
+                </div>
+            </a>
+
+            <!-- 광고 3: 벌룬 버뮤다 팬츠 -->
+            <a href="https://link.coupang.com/a/dXdB4A4elM" target="_blank" referrerpolicy="unsafe-url"
+               class="flex items-center justify-between bg-[#161b22] border border-gray-800 rounded-xl p-5 transition-all hover:border-sky-500 hover:bg-[#1f242c] shadow-md group">
+                <div class="flex items-center space-x-4">
+                    <div class="w-12 h-12 rounded-lg bg-sky-950/50 flex items-center justify-center border border-sky-900 text-sky-400 text-xl flex-shrink-0">
+                        <i class="fa-solid fa-shirt"></i>
+                    </div>
+                    <p class="text-sm text-gray-200 leading-relaxed group-hover:text-white transition-colors">
+                        트렌디하고 편안한 데일리 룩 완성! 🩳<br><b>FITOJIM 남자 반바지 원턱 와이드 벌룬 버뮤다 팬츠 트레이닝 바지</b> 핏 예쁜 핫템 정보를 확인해보세요!
+                    </p>
+                </div>
+                <div class="text-xs font-semibold px-3 py-1.5 rounded-lg bg-sky-600 text-white flex-shrink-0 ml-4 group-hover:bg-sky-500 transition-colors">
+                    보러가기 <i class="fa-solid fa-chevron-right ml-1"></i>
+                </div>
+            </a>
+
+            <!-- 쿠팡 파트너스 필수 표기 문구 -->
+            <p class="text-[10px] text-gray-600 text-center mt-4">이 포스팅은 쿠팡 파트너스 활동의 일환으로, 이에 따른 일정액의 수수료를 제공받습니다.</p>
         </div>
 
     </main>
