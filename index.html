@@ -4,59 +4,82 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>MANNAL Project Hub</title>
-    <!-- Tailwind CSS 플레이그라운드 CDN (별도 빌드 없이 바로 사용 가능) -->
+    <!-- Tailwind CSS 플레이그라운드 CDN -->
     <script src="https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <style>
-        body { background-color: #0d1117; color: #c9d1d9; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Helvetica, Arial, sans-serif; }
+        body { background-color: #0d1117; color: #ffffff; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Helvetica, Arial, sans-serif; }
     </style>
 </head>
 <body class="flex flex-col min-h-screen">
 
-    <!-- 헤더 영역 -->
-    <header class="border-b border-gray-800 bg-[#161b22] py-8 text-center px-4">
+    <!-- 헤더 영역 (하단 바 색상 핑크 반영) -->
+    <header class="border-b border-pink-500 bg-[#161b22] py-8 text-center px-4">
         <h1 class="text-3xl font-bold text-white tracking-wide mb-2">🚀 MANNAL 학습 Room</h1>
-        <p class="text-gray-400 text-sm max-w-md mx-auto">학습하실 앱을 선택하세요~</p>
+        <p class="text-gray-300 text-sm max-w-md mx-auto">학습하실 앱을 선택하세요~</p>
     </header>
 
     <!-- 메인 대시보드 영역 -->
     <main class="flex-grow max-w-6xl w-full mx-auto px-6 py-12">
-        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+        <!-- 학습 카드 Grid -->
+        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mb-12">
 
             <!-- 카드 1: MANNAL_4_ad 사자성어 -->
             <a href="https://johnpark236-tech.github.io/MANNAL-4_ad" target="_blank" 
-               class="group block bg-[#161b22] border border-gray-800 rounded-xl p-6 transition-all duration-300 hover:border-green-500 hover:-translate-y-1 shadow-md">
+               class="group block bg-[#161b22] border border-gray-800 rounded-xl p-6 transition-all duration-300 hover:border-pink-500 hover:-translate-y-1 shadow-md">
                 <div class="flex items-center justify-between mb-4">
+                    <span class="text-xs font-semibold px-2.5 py-1 rounded bg-pink-950 text-pink-400 border border-pink-800">사자성어</span>
                 </div>
-                <h3 class="text-lg font-bold text-white mb-2 group-hover:text-green-400 transition-colors">사자성어 학습</h3>
-                <p class="text-sm text-gray-400 leading-relaxed">초급, 중급, 고급</p>
+                <h3 class="text-lg font-bold text-white mb-2 group-hover:text-pink-400 transition-colors">사자성어 학습</h3>
+                <p class="text-sm text-gray-300 leading-relaxed">초급, 중급, 고급</p>
             </a>
 
             <!-- 카드 2: MANNAL_Korean_card_game- -->
             <a href="https://johnpark236-tech.github.io/MANNAL_Korean_card_game-" target="_blank" 
-               class="group block bg-[#161b22] border border-gray-800 rounded-xl p-6 transition-all duration-300 hover:border-blue-500 hover:-translate-y-1 shadow-md">
+               class="group block bg-[#161b22] border border-gray-800 rounded-xl p-6 transition-all duration-300 hover:border-pink-500 hover:-translate-y-1 shadow-md">
                 <div class="flex items-center justify-between mb-4">
+                    <span class="text-xs font-semibold px-2.5 py-1 rounded bg-pink-950 text-pink-400 border border-pink-800">교재 단어</span>
                 </div>
-                <h3 class="text-lg font-bold text-white mb-2 group-hover:text-blue-400 transition-colors">교재 단어 학습</h3>
-                <p class="text-sm text-gray-400 leading-relaxed">한국어 교재 1과 부터 16과</p>
+                <h3 class="text-lg font-bold text-white mb-2 group-hover:text-pink-400 transition-colors">교재 단어 학습</h3>
+                <p class="text-sm text-gray-300 leading-relaxed">한국어 교재 1과 부터 16과</p>
             </a>
 
             <!-- 카드 3: MANNAL_word_da 다의어 -->
             <a href="https://johnpark236-tech.github.io/MANNAL_word_da/" target="_blank" 
-               class="group block bg-[#161b22] border border-gray-800 rounded-xl p-6 transition-all duration-300 hover:border-blue-500 hover:-translate-y-1 shadow-md">
+               class="group block bg-[#161b22] border border-gray-800 rounded-xl p-6 transition-all duration-300 hover:border-pink-500 hover:-translate-y-1 shadow-md">
                 <div class="flex items-center justify-between mb-4">
+                    <span class="text-xs font-semibold px-2.5 py-1 rounded bg-pink-950 text-pink-400 border border-pink-800">다의어</span>
                 </div>
-                <h3 class="text-lg font-bold text-white mb-2 group-hover:text-blue-400 transition-colors">다의어 단어 학습</h3>
-                <p class="text-sm text-gray-400 leading-relaxed">다의어 집중 공부</p>
+                <h3 class="text-lg font-bold text-white mb-2 group-hover:text-pink-400 transition-colors">다의어 단어 학습</h3>
+                <p class="text-sm text-gray-300 leading-relaxed">다의어 집중 공부</p>
             </a>
 
-            <!-- 추가하고 싶은 프로젝트가 있다면 이 양식대로 카드를 아래에 복사/붙여넣기 하시면 됩니다! -->
-
         </div>
+
+        <!-- 2) 광고 영역 추가 (대시보드 하단에 순차적으로 배치) -->
+        <div class="w-full max-w-4xl mx-auto mt-8 border border-gray-800 rounded-xl bg-[#161b22] p-4 text-center">
+            <p class="text-xs text-gray-500 mb-2 font-mono tracking-wider">ADVERTISEMENT</p>
+            
+            <!-- 실제 구글 애드센스나 광고 스크립트 코드를 이 자리에 그대로 넣어주시면 됩니다 -->
+            <div class="min-h-[100px] flex items-center justify-center border border-dashed border-gray-700 rounded bg-[#0d1117]">
+                <!-- 예시용 애드센스 플레이스홀더 (추후 발급받은 script 코드로 대체 가능) -->
+                <ins class="adsbygoogle"
+                     style="display:block"
+                     data-ad-client="ca-pub-xxxxxxxxxxxxxxxx"
+                     data-ad-slot="xxxxxxxxxx"
+                     data-ad-format="auto"
+                     data-full-width-responsive="true"></ins>
+                <script>
+                     (adsbygoogle = window.adsbygoogle || []).push({});
+                </script>
+                <span class="text-sm text-gray-400"><i class="fa-solid fa-rectangle-ad mr-2"></i> 여기에 광고 스크립트 코드를 추가하세요</span>
+            </div>
+        </div>
+
     </main>
 
     <!-- 푸터 영역 -->
-    <footer class="border-t border-gray-800 bg-[#0d1117] py-6 text-center text-xs text-gray-500">
+    <footer class="border-t border-gray-800 bg-[#0d1117] py-6 text-center text-xs text-gray-400">
         <p>© 2026 johnpark236-tech. Powered by GitHub Pages.</p>
     </footer>
 
