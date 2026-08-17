@@ -225,10 +225,10 @@ def derive_product_name(coupang_url: str, request_data: dict, raw_text: str) -> 
     ).strip()
 
     if not product_name:
-        product_name = fetch_partner_product_name(coupang_url)
+        product_name = extract_title_from_pasted_text(raw_text)
 
     if not product_name:
-        product_name = extract_title_from_pasted_text(raw_text)
+        product_name = fetch_partner_product_name(coupang_url)
 
     if not product_name:
         product_name = fetch_product_title(coupang_url)
