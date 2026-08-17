@@ -16,21 +16,25 @@ jobs:
         run: |
           python - <<'PY'
           import os,json,hmac,hashlib,datetime,urllib.request,urllib.parse
-          host='https://api-gateway.coupang.com'
-          path='/v2/providers/affiliate_open_api/apis/openapi/products/search'
-          for keyword in ['4697102527','계란']:
-            query=urllib.parse.urlencode({'keyword':keyword,'limit':10})
-            signed=datetime.datetime.now(datetime.timezone.utc).strftime('%y%m%dT%H%M%SZ')
-            sig=hmac.new(os.environ['COUPANG_SECRET_KEY'].encode(),(signed+'GET'+path+query).encode(),hashlib.sha256).hexdigest()
-            auth=f"CEA algorithm=HmacSHA256, access-key={os.environ['COUPANG_ACCESS_KEY']}, signed-date={signed}, signature={sig}"
-            req=urllib.request.Request(host+path+'?'+query,headers={'Authorization':auth,'Content-Type':'application/json;charset=UTF-8'},method='GET')
-            try:
-              with urllib.request.urlopen(req,timeout=30) as r: payload=json.loads(r.read().decode())
-              print('keyword=',keyword,'rCode=',payload.get('rCode'),'rMessage=',payload.get('rMessage'))
-              data=payload.get('data') or []
-              print('count=',len(data))
-              for item in data:
-                print('productId=',item.get('productId'),'productName=',item.get('productName'))
-            except Exception as e:
-              print('keyword=',keyword,'ERROR=',repr(e))
+          host='https://api-gateway.coupang.com'; path='/v2/providers/affiliate_open_api/apis/openapi/products/search'
+          keyword='계란'; query=urllib.parse.urlencode({'keyword':keyword,'limit':10})
+          signed=datetime.datetime.now(datetime.timezone.utc).strftime('%y%m%dT%H%M%SZ')
+          sig=hmac.new(os.environ['COUPANG_SECRET_KEY'].encode(),(signed+'GET'+path+query).encode(),hashlib.sha256).hexdigest()
+          auth=f"CEA algorithm=HmacSHA256, access-key={os.environ['COUPANG_ACCESS_KEY']}, signed-date={signed}, signature={sig}"
+          req=urllib.request.Request(host+path+'?'+query,headers={'Authorization':auth,'Content-Type':'application/json;charset=UTF-8'},method='GET')
+          with urllib.request.urlopen(req,timeout=30) as r: payload=json.loads(r.read().decode())
+          data=payload.get('data')
+          print('data_type=',type(data).__name__)
+          if isinstance(data,dict):
+            print('data_keys=',sorted(data.keys()))
+            for k,v in data.items():
+              if isinstance(v,list):
+                print(k,'list_count=',len(v))
+                for item in v[:10]:
+                  if isinstance(item,dict): print('ITEM', {x:item.get(x) for x in ['productId','productName','productPrice','categoryName','rank']})
+                  else: print('ITEM_RAW',repr(item)[:500])
+              else:
+                print(k,'=',repr(v)[:1000])
+          else:
+            print('data=',repr(data)[:3000])
           PY
