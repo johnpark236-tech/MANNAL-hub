@@ -36,6 +36,28 @@ def extract_first_url(raw_text: str) -> str:
     return candidate.rstrip(".,)]}>\"'")
 
 
+def extract_title_from_pasted_text(raw_text: str) -> str:
+    """Use a product-name line that appears before the URL in Coupang share text."""
+    if not raw_text:
+        return ""
+    before_url = raw_text.split("https://", 1)[0]
+    lines = [re.sub(r"\s+", " ", line).strip() for line in before_url.splitlines()]
+    ignored = {
+        "쿠팡을 추천 합니다!",
+        "쿠팡을 추천합니다!",
+        "쿠팡을 추천 합니다! 🛒",
+        "쿠팡을 추천합니다! 🛒",
+    }
+    candidates = []
+    for line in lines:
+        if not line or line in ignored:
+            continue
+        if line.startswith("아래 쿠팡 상품을") or line.startswith("쿠팡 상품을"):
+            continue
+        candidates.append(line)
+    return candidates[-1] if candidates else ""
+
+
 def convert_to_deeplink(coupang_url: str) -> str:
     if coupang_url.startswith("https://link.coupang.com/"):
         return coupang_url
@@ -134,18 +156,16 @@ def fetch_product_title(coupang_url: str) -> str:
     return ""
 
 
-def derive_copy(coupang_url: str, request_data: dict) -> tuple[str, str]:
-    line1 = (request_data.get("line1") or "").strip()
-    line2 = (request_data.get("line2") or "").strip()
-    if line1 and line2:
-        return line1, line2
-
+def derive_product_name(coupang_url: str, request_data: dict, raw_text: str) -> str:
     product_name = (
         request_data.get("productName")
         or request_data.get("product_name")
         or request_data.get("title")
         or ""
     ).strip()
+
+    if not product_name:
+        product_name = extract_title_from_pasted_text(raw_text)
 
     if not product_name:
         product_name = fetch_product_title(coupang_url)
@@ -155,15 +175,14 @@ def derive_copy(coupang_url: str, request_data: dict) -> tuple[str, str]:
         q = urllib.parse.parse_qs(parsed.query).get("q", [""])[0].strip()
         product_name = urllib.parse.unquote_plus(q) if q else "쿠팡 추천 상품"
 
-    # Automatic ads: real Coupang product name on the first line.
-    return line1 or product_name, line2 or "쿠팡에서 상품 정보를 확인해보세요!"
+    return clean_product_title(product_name)
 
 
 def choose_ad_icon(product_name: str) -> tuple[str, str, str]:
     name = (product_name or "").lower()
 
     rules = [
-        ("식품", ["치킨", "오리", "고기", "돼지", "소고기", "닭", "라면", "과자", "음료", "커피", "우유", "두유", "김치", "쌀", "과일", "채소", "식품", "간식", "빵", "떡", "소스", "참치", "햄", "만두", "피자", "버거", "계란", "달걀", "반숙란", "반숙계란"], "ad-icon-orange", "fa-utensils"),
+        ("식품", ["치킨", "오리", "고기", "돼지", "소고기", "닭", "라면", "과자", "음료", "커피", "우유", "두유", "김치", "쌀", "과일", "채소", "식품", "간식", "빵", "떡", "소스", "참치", "햄", "만두", "피자", "버거", "계란", "달걀", "반숙란", "반숙계란", "구운계란", "훈제란"], "ad-icon-orange", "fa-utensils"),
         ("패션", ["여성", "남성", "니트", "반팔", "티셔츠", "셔츠", "블라우스", "바지", "팬츠", "원피스", "스커트", "재킷", "자켓", "코트", "신발", "운동화", "샌들", "슬리퍼", "가방", "모자", "의류"], "ad-icon-pink", "fa-shirt"),
         ("도서", ["책", "도서", "교재", "workbook", "student book", "문제집", "수험서", "모의고사", "토픽", "topik"], "ad-icon-yellow", "fa-book-open"),
         ("전자·가전", ["선풍기", "콘덴서", "모터", "충전기", "케이블", "이어폰", "헤드폰", "스피커", "노트북", "태블릿", "스마트폰", "모니터", "키보드", "마우스", "가전", "전기", "전자"], "ad-icon-yellow", "fa-plug"),
@@ -192,7 +211,7 @@ def choose_ad_icon(product_name: str) -> tuple[str, str, str]:
     return random.choice(common_icons)
 
 
-def append_ad(index_path: Path, affiliate_url: str, line1: str, line2: str, color_class: str, icon_class: str) -> None:
+def append_ad(index_path: Path, affiliate_url: str, product_name: str, color_class: str, icon_class: str) -> None:
     text = index_path.read_text(encoding="utf-8")
     if affiliate_url in text:
         print("Affiliate URL already exists; no duplicate ad added.")
@@ -202,7 +221,7 @@ def append_ad(index_path: Path, affiliate_url: str, line1: str, line2: str, colo
     if marker not in text:
         raise RuntimeError("Could not find the end of the Coupang ads list in index.html.")
 
-    ad = f'''      <a href="{html.escape(affiliate_url, quote=True)}" target="_blank" referrerpolicy="unsafe-url" class="ad-card">\n        <div class="ad-icon {html.escape(color_class)}"><i class="fa-solid {html.escape(icon_class)}"></i></div>\n        <p>{html.escape(line1)}<br>\n           <b>{html.escape(line2)}</b></p>\n        <span class="ad-cta">보러가기 →</span>\n      </a>\n\n'''
+    ad = f'''      <a href="{html.escape(affiliate_url, quote=True)}" target="_blank" referrerpolicy="unsafe-url" class="ad-card">\n        <div class="ad-icon {html.escape(color_class)}"><i class="fa-solid {html.escape(icon_class)}"></i></div>\n        <p><b>{html.escape(product_name)}</b></p>\n        <span class="ad-cta">보러가기 →</span>\n      </a>\n\n'''
     text = text.replace(marker, ad + marker, 1)
     index_path.write_text(text, encoding="utf-8")
 
@@ -213,8 +232,8 @@ def main() -> None:
 
     request_path = Path(sys.argv[1])
     data = json.loads(request_path.read_text(encoding="utf-8"))
-    raw_url = data.get("url") or ""
-    coupang_url = extract_first_url(raw_url)
+    raw_text = data.get("rawText") or data.get("text") or data.get("url") or ""
+    coupang_url = extract_first_url(raw_text)
 
     if not (
         coupang_url.startswith("https://www.coupang.com/")
@@ -226,16 +245,15 @@ def main() -> None:
     if not affiliate_url:
         raise RuntimeError("Coupang API returned no affiliate URL.")
 
-    line1, line2 = derive_copy(coupang_url, data)
-    category, color_class, icon_class = choose_ad_icon(line1)
-    append_ad(Path("index.html"), affiliate_url, line1, line2, color_class, icon_class)
+    product_name = derive_product_name(coupang_url, data, raw_text)
+    category, color_class, icon_class = choose_ad_icon(product_name)
+    append_ad(Path("index.html"), affiliate_url, product_name, color_class, icon_class)
 
     Path(".coupang_last_result.json").write_text(
         json.dumps(
             {
                 "affiliateUrl": affiliate_url,
-                "line1": line1,
-                "line2": line2,
+                "productName": product_name,
                 "category": category,
                 "icon": icon_class,
                 "iconColorClass": color_class,
@@ -245,7 +263,7 @@ def main() -> None:
         ),
         encoding="utf-8",
     )
-    print(f"Coupang affiliate ad prepared successfully: {line1} [{category} / {icon_class}]")
+    print(f"Coupang affiliate ad prepared successfully: {product_name} [{category} / {icon_class}]")
 
 
 if __name__ == "__main__":
