@@ -76,15 +76,41 @@ jobs:
         uses: actions/github-script@v7
         with:
           script: |
-            await github.rest.issues.createComment({
-              owner: context.repo.owner,
-              repo: context.repo.repo,
-              issue_number: context.issue.number,
-              body: '쿠팡 파트너스 링크 변환 및 광고 추가가 완료되었습니다.'
-            });
-            await github.rest.issues.update({
-              owner: context.repo.owner,
-              repo: context.repo.repo,
-              issue_number: context.issue.number,
-              state: 'closed'
-            });
+            const sleep = (ms) => new Promise(resolve => setTimeout(resolve, ms));
+            const transient = new Set([502, 503, 504]);
+
+            async function withRetry(label, fn) {
+              const maxAttempts = 5;
+              for (let attempt = 1; attempt <= maxAttempts; attempt++) {
+                try {
+                  return await fn();
+                } catch (error) {
+                  const status = error?.status || error?.response?.status;
+                  const retryable = transient.has(status);
+                  if (!retryable || attempt === maxAttempts) {
+                    throw error;
+                  }
+                  const waitMs = 5000 * attempt;
+                  core.warning(`${label} failed with HTTP ${status}. Retry ${attempt}/${maxAttempts} after ${waitMs / 1000}s.`);
+                  await sleep(waitMs);
+                }
+              }
+            }
+
+            await withRetry('Create completion comment', () =>
+              github.rest.issues.createComment({
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                issue_number: context.issue.number,
+                body: '쿠팡 파트너스 링크 변환 및 광고 추가가 완료되었습니다.'
+              })
+            );
+
+            await withRetry('Close issue', () =>
+              github.rest.issues.update({
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                issue_number: context.issue.number,
+                state: 'closed'
+              })
+            );
