@@ -1,0 +1,49 @@
+name: Update Coupang Ad
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - '.github/workflows/update-coupang-ad.yml'
+
+permissions:
+  contents: write
+
+jobs:
+  update:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: main
+      - name: Replace third ad from bottom
+        run: |
+          python - <<'PY'
+          from pathlib import Path
+          p = Path('index.html')
+          s = p.read_text(encoding='utf-8')
+          old = '''      <a href="https://link.coupang.com/a/eX7QDpkKAK" target="_blank" referrerpolicy="unsafe-url" class="ad-card">
+        <div class="ad-icon ad-icon-yellow"><i class="fa-solid fa-wand-magic-sparkles"></i></div>
+        <p>#꾸밈 사각 콩나물 재배기 + 노란 콩나물 콩 세트✨🪄<br>
+           <b>#콩나물 재배기🌿🎨</b></p>
+        <span class="ad-cta">보러가기 →</span>
+      </a>'''
+          new = '''      <a href="https://link.coupang.com/a/gh5dg938wK" target="_blank" referrerpolicy="unsafe-url" class="ad-card">
+        <div class="ad-icon ad-icon-yellow"><i class="fa-solid fa-wand-magic-sparkles"></i></div>
+        <p>후라이드 치킨1<br>
+           <b>후라이드 치킨2</b></p>
+        <span class="ad-cta">보러가기 →</span>
+      </a>'''
+          if old not in s:
+              raise SystemExit('Target ad block not found; no changes made.')
+          s2 = s.replace(old, new, 1)
+          p.write_text(s2, encoding='utf-8')
+          PY
+      - name: Commit change
+        run: |
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add index.html
+          git diff --cached --quiet && exit 0
+          git commit -m 'Update Coupang fried chicken ad'
+          git push origin main
