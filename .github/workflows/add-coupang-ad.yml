@@ -1,0 +1,52 @@
+name: Add Coupang Partners Ad
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - 'coupang_requests/*.json'
+
+permissions:
+  contents: write
+
+concurrency:
+  group: coupang-ad-writer
+  cancel-in-progress: false
+
+jobs:
+  add-ad:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          ref: main
+
+      - name: Find newest request
+        id: request
+        shell: bash
+        run: |
+          set -euo pipefail
+          REQUEST_FILE="$(ls -1t coupang_requests/*.json | head -n 1)"
+          echo "file=$REQUEST_FILE" >> "$GITHUB_OUTPUT"
+
+      - name: Convert URL and append ad
+        env:
+          COUPANG_ACCESS_KEY: ${{ secrets.COUPANG_ACCESS_KEY }}
+          COUPANG_SECRET_KEY: ${{ secrets.COUPANG_SECRET_KEY }}
+        run: |
+          python scripts/add_coupang_ad.py "${{ steps.request.outputs.file }}"
+
+      - name: Commit index.html update
+        shell: bash
+        run: |
+          set -euo pipefail
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add index.html .coupang_last_result.json
+          if git diff --cached --quiet; then
+            echo 'No index.html change was necessary.'
+            exit 0
+          fi
+          git commit -m 'Add Coupang Partners ad'
+          git push origin main
