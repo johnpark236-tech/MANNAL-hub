@@ -1,0 +1,32 @@
+name: Inspect Coupang Deeplink Response
+on:
+  push:
+    branches: [main]
+    paths: ['.github/workflows/inspect-coupang-deeplink-response.yml']
+permissions:
+  contents: read
+jobs:
+  inspect:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Inspect non-secret response fields
+        env:
+          COUPANG_ACCESS_KEY: ${{ secrets.COUPANG_ACCESS_KEY }}
+          COUPANG_SECRET_KEY: ${{ secrets.COUPANG_SECRET_KEY }}
+        run: |
+          python - <<'PY'
+          import os,json,hmac,hashlib,datetime,urllib.request
+          host='https://api-gateway.coupang.com'; path='/v2/providers/affiliate_open_api/apis/openapi/v1/deeplink'
+          url='https://www.coupang.com/vp/products/4697102527?itemId=5115202132&vendorItemId=72424712145&q=%EA%B3%84%EB%9E%80'
+          signed=datetime.datetime.now(datetime.timezone.utc).strftime('%y%m%dT%H%M%SZ')
+          sig=hmac.new(os.environ['COUPANG_SECRET_KEY'].encode(),(signed+'POST'+path).encode(),hashlib.sha256).hexdigest()
+          auth=f"CEA algorithm=HmacSHA256, access-key={os.environ['COUPANG_ACCESS_KEY']}, signed-date={signed}, signature={sig}"
+          req=urllib.request.Request(host+path,data=json.dumps({'coupangUrls':[url]}).encode(),method='POST',headers={'Authorization':auth,'Content-Type':'application/json;charset=UTF-8'})
+          with urllib.request.urlopen(req,timeout=30) as r: payload=json.loads(r.read().decode())
+          print('top_keys=',sorted(payload.keys()))
+          data=payload.get('data') or []; print('data_count=',len(data))
+          if data:
+            item=data[0]; print('item_keys=',sorted(item.keys()))
+            for k,v in item.items():
+              print(k,'=', '<url omitted>' if ('url' in k.lower() or 'link' in k.lower()) else v)
+          PY
