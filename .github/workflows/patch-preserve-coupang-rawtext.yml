@@ -1,4 +1,5 @@
 name: Patch Coupang Raw Text Preservation
+# retry: product-name priority only
 on:
   push:
     branches: [main]
