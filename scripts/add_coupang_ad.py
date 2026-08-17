@@ -33,7 +33,7 @@ def extract_first_url(raw_text: str) -> str:
     if pos < 0:
         return ""
     candidate = raw_text[pos:].split()[0].strip()
-    return candidate.rstrip('.,)\\]}>"\\'')
+    return candidate.rstrip(".,)]}>\"'")
 
 
 def convert_to_deeplink(coupang_url: str) -> str:
@@ -71,7 +71,7 @@ def convert_to_deeplink(coupang_url: str) -> str:
 
 def clean_product_title(value: str) -> str:
     value = html.unescape(value or "")
-    value = re.sub(r"\\s+", " ", value).strip()
+    value = re.sub(r"\s+", " ", value).strip()
     for suffix in (
         " | 쿠팡!",
         " - 쿠팡!",
@@ -105,9 +105,9 @@ def fetch_product_title(coupang_url: str) -> str:
         return ""
 
     patterns = [
-        r'<meta[^>]+property=["\\']og:title["\\'][^>]+content=["\\']([^"\\']+)["\\']',
-        r'<meta[^>]+content=["\\']([^"\\']+)["\\'][^>]+property=["\\']og:title["\\']',
-        r'<meta[^>]+name=["\\']twitter:title["\\'][^>]+content=["\\']([^"\\']+)["\\']',
+        r'<meta[^>]+property=["\']og:title["\'][^>]+content=["\']([^"\']+)["\']',
+        r'<meta[^>]+content=["\']([^"\']+)["\'][^>]+property=["\']og:title["\']',
+        r'<meta[^>]+name=["\']twitter:title["\'][^>]+content=["\']([^"\']+)["\']',
         r'<title[^>]*>(.*?)</title>',
     ]
     for pattern in patterns:
@@ -118,8 +118,8 @@ def fetch_product_title(coupang_url: str) -> str:
                 return title
 
     for pattern in (
-        r'"productName"\\s*:\\s*"((?:\\\\.|[^"\\\\])+)"',
-        r'"title"\\s*:\\s*"((?:\\\\.|[^"\\\\])+)"',
+        r'"productName"\s*:\s*"((?:\\.|[^"\\])+)"',
+        r'"title"\s*:\s*"((?:\\.|[^"\\])+)"',
     ):
         match = re.search(pattern, page, re.I)
         if match:
@@ -159,11 +159,10 @@ def derive_copy(coupang_url: str, request_data: dict) -> tuple[str, str]:
 
 
 def choose_ad_icon(product_name: str) -> tuple[str, str, str]:
-    """Return (category, color_class, Font Awesome icon class)."""
     name = (product_name or "").lower()
 
     rules = [
-        ("식품", ["치킨", "오리", "고기", "돼지", "소고기", "닭", "라면", "과자", "음료", "커피", "우유", "두유", "김치", "쌀", "과일", "채소", "식품", "간식", "빵", "떡", "소스", "참치", "햄", "만두", "피자", "버거"], "ad-icon-orange", "fa-utensils"),
+        ("식품", ["치킨", "오리", "고기", "돼지", "소고기", "닭", "라면", "과자", "음료", "커피", "우유", "두유", "김치", "쌀", "과일", "채소", "식품", "간식", "빵", "떡", "소스", "참치", "햄", "만두", "피자", "버거", "계란", "달걀"], "ad-icon-orange", "fa-utensils"),
         ("패션", ["여성", "남성", "니트", "반팔", "티셔츠", "셔츠", "블라우스", "바지", "팬츠", "원피스", "스커트", "재킷", "자켓", "코트", "신발", "운동화", "샌들", "슬리퍼", "가방", "모자", "의류"], "ad-icon-pink", "fa-shirt"),
         ("도서", ["책", "도서", "교재", "workbook", "student book", "문제집", "수험서", "모의고사", "토픽", "topik"], "ad-icon-yellow", "fa-book-open"),
         ("전자·가전", ["선풍기", "콘덴서", "모터", "충전기", "케이블", "이어폰", "헤드폰", "스피커", "노트북", "태블릿", "스마트폰", "모니터", "키보드", "마우스", "가전", "전기", "전자"], "ad-icon-yellow", "fa-plug"),
@@ -198,11 +197,11 @@ def append_ad(index_path: Path, affiliate_url: str, line1: str, line2: str, colo
         print("Affiliate URL already exists; no duplicate ad added.")
         return
 
-    marker = '    </div>\\n\\n    <p class="coupang-notice">'
+    marker = '    </div>\n\n    <p class="coupang-notice">'
     if marker not in text:
         raise RuntimeError("Could not find the end of the Coupang ads list in index.html.")
 
-    ad = f'''      <a href="{html.escape(affiliate_url, quote=True)}" target="_blank" referrerpolicy="unsafe-url" class="ad-card">\\n        <div class="ad-icon {html.escape(color_class)}"><i class="fa-solid {html.escape(icon_class)}"></i></div>\\n        <p>{html.escape(line1)}<br>\\n           <b>{html.escape(line2)}</b></p>\\n        <span class="ad-cta">보러가기 →</span>\\n      </a>\\n\\n'''
+    ad = f'''      <a href="{html.escape(affiliate_url, quote=True)}" target="_blank" referrerpolicy="unsafe-url" class="ad-card">\n        <div class="ad-icon {html.escape(color_class)}"><i class="fa-solid {html.escape(icon_class)}"></i></div>\n        <p>{html.escape(line1)}<br>\n           <b>{html.escape(line2)}</b></p>\n        <span class="ad-cta">보러가기 →</span>\n      </a>\n\n'''
     text = text.replace(marker, ad + marker, 1)
     index_path.write_text(text, encoding="utf-8")
 
