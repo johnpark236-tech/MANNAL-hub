@@ -1,0 +1,29 @@
+name: Patch Coupang Textarea
+
+on:
+  push:
+    branches:
+      - main
+    paths:
+      - '.github/workflows/patch-coupang-textarea.yml'
+
+permissions:
+  contents: write
+
+jobs:
+  patch:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: main
+      - name: Patch uploader input
+        run: python scripts/patch_coupang_textarea.py
+      - name: Commit update
+        run: |
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add index.html
+          git diff --cached --quiet && exit 0
+          git commit -m 'Support desktop and shared Coupang links in uploader'
+          git push origin main
