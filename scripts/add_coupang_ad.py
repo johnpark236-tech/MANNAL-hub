@@ -155,14 +155,15 @@ def derive_copy(coupang_url: str, request_data: dict) -> tuple[str, str]:
         q = urllib.parse.parse_qs(parsed.query).get("q", [""])[0].strip()
         product_name = urllib.parse.unquote_plus(q) if q else "쿠팡 추천 상품"
 
-    return line1 or "쿠팡을 추천 합니다! 🛒", line2 or product_name
+    # Automatic ads: real Coupang product name on the first line.
+    return line1 or product_name, line2 or "쿠팡에서 상품 정보를 확인해보세요!"
 
 
 def choose_ad_icon(product_name: str) -> tuple[str, str, str]:
     name = (product_name or "").lower()
 
     rules = [
-        ("식품", ["치킨", "오리", "고기", "돼지", "소고기", "닭", "라면", "과자", "음료", "커피", "우유", "두유", "김치", "쌀", "과일", "채소", "식품", "간식", "빵", "떡", "소스", "참치", "햄", "만두", "피자", "버거", "계란", "달걀"], "ad-icon-orange", "fa-utensils"),
+        ("식품", ["치킨", "오리", "고기", "돼지", "소고기", "닭", "라면", "과자", "음료", "커피", "우유", "두유", "김치", "쌀", "과일", "채소", "식품", "간식", "빵", "떡", "소스", "참치", "햄", "만두", "피자", "버거", "계란", "달걀", "반숙란", "반숙계란"], "ad-icon-orange", "fa-utensils"),
         ("패션", ["여성", "남성", "니트", "반팔", "티셔츠", "셔츠", "블라우스", "바지", "팬츠", "원피스", "스커트", "재킷", "자켓", "코트", "신발", "운동화", "샌들", "슬리퍼", "가방", "모자", "의류"], "ad-icon-pink", "fa-shirt"),
         ("도서", ["책", "도서", "교재", "workbook", "student book", "문제집", "수험서", "모의고사", "토픽", "topik"], "ad-icon-yellow", "fa-book-open"),
         ("전자·가전", ["선풍기", "콘덴서", "모터", "충전기", "케이블", "이어폰", "헤드폰", "스피커", "노트북", "태블릿", "스마트폰", "모니터", "키보드", "마우스", "가전", "전기", "전자"], "ad-icon-yellow", "fa-plug"),
@@ -226,7 +227,7 @@ def main() -> None:
         raise RuntimeError("Coupang API returned no affiliate URL.")
 
     line1, line2 = derive_copy(coupang_url, data)
-    category, color_class, icon_class = choose_ad_icon(line2)
+    category, color_class, icon_class = choose_ad_icon(line1)
     append_ad(Path("index.html"), affiliate_url, line1, line2, color_class, icon_class)
 
     Path(".coupang_last_result.json").write_text(
@@ -244,7 +245,7 @@ def main() -> None:
         ),
         encoding="utf-8",
     )
-    print(f"Coupang affiliate ad prepared successfully: {line2} [{category} / {icon_class}]")
+    print(f"Coupang affiliate ad prepared successfully: {line1} [{category} / {icon_class}]")
 
 
 if __name__ == "__main__":
