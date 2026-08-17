@@ -1,0 +1,29 @@
+name: Patch Coupang Worker UI
+
+on:
+  push:
+    branches:
+      - main
+    paths:
+      - '.github/workflows/patch-coupang-worker-ui.yml'
+
+permissions:
+  contents: write
+
+jobs:
+  patch:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: main
+      - name: Patch uploader UI
+        run: python scripts/patch_coupang_worker_ui.py
+      - name: Commit UI update
+        run: |
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add index.html
+          git diff --cached --quiet && exit 0
+          git commit -m 'Connect Coupang uploader to Cloudflare Worker'
+          git push origin main
