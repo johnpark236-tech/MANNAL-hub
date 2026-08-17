@@ -6,6 +6,7 @@ import hashlib
 import datetime
 import html
 import re
+import random
 import urllib.request
 import urllib.parse
 import urllib.error
@@ -32,11 +33,10 @@ def extract_first_url(raw_text: str) -> str:
     if pos < 0:
         return ""
     candidate = raw_text[pos:].split()[0].strip()
-    return candidate.rstrip('.,)\]}>"\'')
+    return candidate.rstrip('.,)\\]}>"\\'')
 
 
 def convert_to_deeplink(coupang_url: str) -> str:
-    # Already a Coupang Partners short link: publish it directly.
     if coupang_url.startswith("https://link.coupang.com/"):
         return coupang_url
 
@@ -71,7 +71,7 @@ def convert_to_deeplink(coupang_url: str) -> str:
 
 def clean_product_title(value: str) -> str:
     value = html.unescape(value or "")
-    value = re.sub(r"\s+", " ", value).strip()
+    value = re.sub(r"\\s+", " ", value).strip()
     for suffix in (
         " | 쿠팡!",
         " - 쿠팡!",
@@ -85,7 +85,6 @@ def clean_product_title(value: str) -> str:
 
 
 def fetch_product_title(coupang_url: str) -> str:
-    """Best-effort product-title lookup. Short links are followed automatically."""
     req = urllib.request.Request(
         coupang_url,
         headers={
@@ -106,9 +105,9 @@ def fetch_product_title(coupang_url: str) -> str:
         return ""
 
     patterns = [
-        r'<meta[^>]+property=["\']og:title["\'][^>]+content=["\']([^"\']+)["\']',
-        r'<meta[^>]+content=["\']([^"\']+)["\'][^>]+property=["\']og:title["\']',
-        r'<meta[^>]+name=["\']twitter:title["\'][^>]+content=["\']([^"\']+)["\']',
+        r'<meta[^>]+property=["\\']og:title["\\'][^>]+content=["\\']([^"\\']+)["\\']',
+        r'<meta[^>]+content=["\\']([^"\\']+)["\\'][^>]+property=["\\']og:title["\\']',
+        r'<meta[^>]+name=["\\']twitter:title["\\'][^>]+content=["\\']([^"\\']+)["\\']',
         r'<title[^>]*>(.*?)</title>',
     ]
     for pattern in patterns:
@@ -118,10 +117,9 @@ def fetch_product_title(coupang_url: str) -> str:
             if title and title.lower() not in {"coupang", "쿠팡!"}:
                 return title
 
-    # Coupang pages sometimes embed the product name in JSON instead of meta tags.
     for pattern in (
-        r'"productName"\s*:\s*"((?:\\.|[^"\\])+)"',
-        r'"title"\s*:\s*"((?:\\.|[^"\\])+)"',
+        r'"productName"\\s*:\\s*"((?:\\\\.|[^"\\\\])+)"',
+        r'"title"\\s*:\\s*"((?:\\\\.|[^"\\\\])+)"',
     ):
         match = re.search(pattern, page, re.I)
         if match:
@@ -142,7 +140,6 @@ def derive_copy(coupang_url: str, request_data: dict) -> tuple[str, str]:
     if line1 and line2:
         return line1, line2
 
-    # Prefer an explicitly supplied product name if a future request includes one.
     product_name = (
         request_data.get("productName")
         or request_data.get("product_name")
@@ -150,11 +147,9 @@ def derive_copy(coupang_url: str, request_data: dict) -> tuple[str, str]:
         or ""
     ).strip()
 
-    # Otherwise obtain the real Coupang product title from the product/short-link page.
     if not product_name:
         product_name = fetch_product_title(coupang_url)
 
-    # Last-resort fallback: use the q= search keyword when present.
     if not product_name:
         parsed = urllib.parse.urlparse(coupang_url)
         q = urllib.parse.parse_qs(parsed.query).get("q", [""])[0].strip()
@@ -163,17 +158,51 @@ def derive_copy(coupang_url: str, request_data: dict) -> tuple[str, str]:
     return line1 or "쿠팡을 추천 합니다! 🛒", line2 or product_name
 
 
-def append_ad(index_path: Path, affiliate_url: str, line1: str, line2: str) -> None:
+def choose_ad_icon(product_name: str) -> tuple[str, str, str]:
+    """Return (category, color_class, Font Awesome icon class)."""
+    name = (product_name or "").lower()
+
+    rules = [
+        ("식품", ["치킨", "오리", "고기", "돼지", "소고기", "닭", "라면", "과자", "음료", "커피", "우유", "두유", "김치", "쌀", "과일", "채소", "식품", "간식", "빵", "떡", "소스", "참치", "햄", "만두", "피자", "버거"], "ad-icon-orange", "fa-utensils"),
+        ("패션", ["여성", "남성", "니트", "반팔", "티셔츠", "셔츠", "블라우스", "바지", "팬츠", "원피스", "스커트", "재킷", "자켓", "코트", "신발", "운동화", "샌들", "슬리퍼", "가방", "모자", "의류"], "ad-icon-pink", "fa-shirt"),
+        ("도서", ["책", "도서", "교재", "workbook", "student book", "문제집", "수험서", "모의고사", "토픽", "topik"], "ad-icon-yellow", "fa-book-open"),
+        ("전자·가전", ["선풍기", "콘덴서", "모터", "충전기", "케이블", "이어폰", "헤드폰", "스피커", "노트북", "태블릿", "스마트폰", "모니터", "키보드", "마우스", "가전", "전기", "전자"], "ad-icon-yellow", "fa-plug"),
+        ("생활·주방", ["주방", "냄비", "후라이팬", "프라이팬", "컵", "접시", "수저", "칼", "도마", "수납", "청소", "세제", "휴지", "타월", "수건", "생활", "콩나물 재배기"], "ad-icon-orange", "fa-house"),
+        ("뷰티", ["화장품", "로션", "크림", "세럼", "에센스", "샴푸", "린스", "트리트먼트", "향수", "립", "마스크팩", "선크림", "쿠션", "파운데이션"], "ad-icon-pink", "fa-wand-magic-sparkles"),
+        ("건강", ["건강", "비타민", "유산균", "영양제", "프로틴", "단백질", "안마", "마사지", "혈압", "체온계"], "ad-icon-pink", "fa-heart-pulse"),
+        ("유아·완구", ["유아", "아기", "키즈", "어린이", "장난감", "완구", "블록", "가베", "레고", "인형", "퍼즐"], "ad-icon-yellow", "fa-puzzle-piece"),
+        ("반려동물", ["강아지", "고양이", "반려", "애견", "애묘", "사료", "배변패드", "캣타워"], "ad-icon-orange", "fa-paw"),
+        ("스포츠", ["운동", "헬스", "덤벨", "요가", "골프", "축구", "농구", "배드민턴", "테니스", "자전거", "캠핑", "등산"], "ad-icon-orange", "fa-dumbbell"),
+        ("자동차", ["자동차", "차량", "와이퍼", "엔진", "타이어", "블랙박스", "세차", "카매트"], "ad-icon-yellow", "fa-car"),
+        ("문구·사무", ["문구", "펜", "연필", "볼펜", "노트", "파일", "복사용지", "스테이플러", "사무"], "ad-icon-yellow", "fa-pen"),
+    ]
+
+    for category, keywords, color_class, icon_class in rules:
+        if any(keyword.lower() in name for keyword in keywords):
+            return category, color_class, icon_class
+
+    common_icons = [
+        ("공통", "ad-icon-orange", "fa-bag-shopping"),
+        ("공통", "ad-icon-pink", "fa-gift"),
+        ("공통", "ad-icon-yellow", "fa-star"),
+        ("공통", "ad-icon-orange", "fa-box-open"),
+        ("공통", "ad-icon-pink", "fa-tags"),
+        ("공통", "ad-icon-yellow", "fa-cart-shopping"),
+    ]
+    return random.choice(common_icons)
+
+
+def append_ad(index_path: Path, affiliate_url: str, line1: str, line2: str, color_class: str, icon_class: str) -> None:
     text = index_path.read_text(encoding="utf-8")
     if affiliate_url in text:
         print("Affiliate URL already exists; no duplicate ad added.")
         return
 
-    marker = '    </div>\n\n    <p class="coupang-notice">'
+    marker = '    </div>\\n\\n    <p class="coupang-notice">'
     if marker not in text:
         raise RuntimeError("Could not find the end of the Coupang ads list in index.html.")
 
-    ad = f'''      <a href="{html.escape(affiliate_url, quote=True)}" target="_blank" referrerpolicy="unsafe-url" class="ad-card">\n        <div class="ad-icon ad-icon-orange"><i class="fa-solid fa-drumstick-bite"></i></div>\n        <p>{html.escape(line1)}<br>\n           <b>{html.escape(line2)}</b></p>\n        <span class="ad-cta">보러가기 →</span>\n      </a>\n\n'''
+    ad = f'''      <a href="{html.escape(affiliate_url, quote=True)}" target="_blank" referrerpolicy="unsafe-url" class="ad-card">\\n        <div class="ad-icon {html.escape(color_class)}"><i class="fa-solid {html.escape(icon_class)}"></i></div>\\n        <p>{html.escape(line1)}<br>\\n           <b>{html.escape(line2)}</b></p>\\n        <span class="ad-cta">보러가기 →</span>\\n      </a>\\n\\n'''
     text = text.replace(marker, ad + marker, 1)
     index_path.write_text(text, encoding="utf-8")
 
@@ -198,13 +227,25 @@ def main() -> None:
         raise RuntimeError("Coupang API returned no affiliate URL.")
 
     line1, line2 = derive_copy(coupang_url, data)
-    append_ad(Path("index.html"), affiliate_url, line1, line2)
+    category, color_class, icon_class = choose_ad_icon(line2)
+    append_ad(Path("index.html"), affiliate_url, line1, line2, color_class, icon_class)
 
     Path(".coupang_last_result.json").write_text(
-        json.dumps({"affiliateUrl": affiliate_url, "line1": line1, "line2": line2}, ensure_ascii=False, indent=2),
+        json.dumps(
+            {
+                "affiliateUrl": affiliate_url,
+                "line1": line1,
+                "line2": line2,
+                "category": category,
+                "icon": icon_class,
+                "iconColorClass": color_class,
+            },
+            ensure_ascii=False,
+            indent=2,
+        ),
         encoding="utf-8",
     )
-    print(f"Coupang affiliate ad prepared successfully: {line2}")
+    print(f"Coupang affiliate ad prepared successfully: {line2} [{category} / {icon_class}]")
 
 
 if __name__ == "__main__":
