@@ -24,7 +24,20 @@ def make_auth(access_key: str, secret_key: str) -> str:
     )
 
 
+def extract_first_url(raw_text: str) -> str:
+    raw_text = (raw_text or "").strip()
+    pos = raw_text.find("https://")
+    if pos < 0:
+        return ""
+    candidate = raw_text[pos:].split()[0].strip()
+    return candidate.rstrip('.,)\]}>"\'')
+
+
 def convert_to_deeplink(coupang_url: str) -> str:
+    # Already a Coupang Partners short link: publish it directly.
+    if coupang_url.startswith("https://link.coupang.com/"):
+        return coupang_url
+
     access_key = os.environ.get("COUPANG_ACCESS_KEY", "").strip()
     secret_key = os.environ.get("COUPANG_SECRET_KEY", "").strip()
     if not access_key or not secret_key:
@@ -44,7 +57,6 @@ def convert_to_deeplink(coupang_url: str) -> str:
         with urllib.request.urlopen(req, timeout=30) as resp:
             payload = json.loads(resp.read().decode("utf-8"))
     except urllib.error.HTTPError as e:
-        # Do not print request headers or secrets.
         body_text = e.read().decode("utf-8", errors="replace")
         raise RuntimeError(f"Coupang Deeplink API failed: HTTP {e.code}: {body_text[:500]}") from None
 
@@ -88,9 +100,14 @@ def main() -> None:
 
     request_path = Path(sys.argv[1])
     data = json.loads(request_path.read_text(encoding="utf-8"))
-    coupang_url = (data.get("url") or "").strip()
-    if not coupang_url.startswith("https://www.coupang.com/"):
-        raise RuntimeError("Request URL must be an https://www.coupang.com/ URL.")
+    raw_url = data.get("url") or ""
+    coupang_url = extract_first_url(raw_url)
+
+    if not (
+        coupang_url.startswith("https://www.coupang.com/")
+        or coupang_url.startswith("https://link.coupang.com/")
+    ):
+        raise RuntimeError("Request must contain a valid Coupang URL beginning with https://.")
 
     affiliate_url = convert_to_deeplink(coupang_url)
     if not affiliate_url:
@@ -99,7 +116,6 @@ def main() -> None:
     line1, line2 = derive_copy(coupang_url, data)
     append_ad(Path("index.html"), affiliate_url, line1, line2)
 
-    # Safe output: affiliate URL is intended for publication; secrets are never printed.
     Path(".coupang_last_result.json").write_text(
         json.dumps({"affiliateUrl": affiliate_url, "line1": line1, "line2": line2}, ensure_ascii=False, indent=2),
         encoding="utf-8",
