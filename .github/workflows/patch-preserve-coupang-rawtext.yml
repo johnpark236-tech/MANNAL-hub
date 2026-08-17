@@ -12,7 +12,7 @@ jobs:
       - uses: actions/checkout@v4
         with:
           ref: main
-      - name: Patch files
+      - name: Patch script
         run: |
           python scripts/patch_preserve_coupang_rawtext.py
           python -m py_compile scripts/add_coupang_ad.py
@@ -20,7 +20,7 @@ jobs:
         run: |
           git config user.name 'github-actions[bot]'
           git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
-          git add .github/workflows/add-coupang-ad.yml scripts/add_coupang_ad.py
+          git add scripts/add_coupang_ad.py
           git diff --cached --quiet && exit 0
-          git commit -m 'Preserve Coupang share text for product names'
+          git commit -m 'Prefer Coupang share text product names'
           git push origin main
