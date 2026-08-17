@@ -37,10 +37,10 @@ jobs:
             python - <<'PY'
           import json, os, re
           body = os.environ.get('ISSUE_BODY', '')
-          m = re.search(r'https://www\.coupang\.com/\S+', body)
+          m = re.search(r'https://(?:www|link)\.coupang\.com/\S+', body)
           if not m:
-              raise SystemExit('No Coupang product URL found in issue body.')
-          url = m.group(0).strip()
+              raise SystemExit('No Coupang URL found in issue body.')
+          url = m.group(0).strip().rstrip('.,)]}>\"\'')
           with open('/tmp/coupang_request.json', 'w', encoding='utf-8') as f:
               json.dump({'url': url}, f, ensure_ascii=False)
           PY
