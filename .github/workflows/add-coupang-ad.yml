@@ -5,9 +5,12 @@ on:
     branches: [main]
     paths:
       - 'coupang_requests/*.json'
+  issues:
+    types: [opened]
 
 permissions:
   contents: write
+  issues: write
 
 concurrency:
   group: coupang-ad-writer
@@ -15,6 +18,7 @@ concurrency:
 
 jobs:
   add-ad:
+    if: github.event_name == 'push' || startsWith(github.event.issue.title, '[COUPANG-AD]')
     runs-on: ubuntu-latest
     steps:
       - name: Checkout
@@ -22,13 +26,29 @@ jobs:
         with:
           ref: main
 
-      - name: Find newest request
+      - name: Prepare request
         id: request
         shell: bash
+        env:
+          ISSUE_BODY: ${{ github.event.issue.body }}
         run: |
           set -euo pipefail
-          REQUEST_FILE="$(ls -1t coupang_requests/*.json | head -n 1)"
-          echo "file=$REQUEST_FILE" >> "$GITHUB_OUTPUT"
+          if [ "${{ github.event_name }}" = "issues" ]; then
+            python - <<'PY'
+          import json, os, re
+          body = os.environ.get('ISSUE_BODY', '')
+          m = re.search(r'https://www\.coupang\.com/\S+', body)
+          if not m:
+              raise SystemExit('No Coupang product URL found in issue body.')
+          url = m.group(0).strip()
+          with open('/tmp/coupang_request.json', 'w', encoding='utf-8') as f:
+              json.dump({'url': url}, f, ensure_ascii=False)
+          PY
+            echo "file=/tmp/coupang_request.json" >> "$GITHUB_OUTPUT"
+          else
+            REQUEST_FILE="$(ls -1t coupang_requests/*.json | head -n 1)"
+            echo "file=$REQUEST_FILE" >> "$GITHUB_OUTPUT"
+          fi
 
       - name: Convert URL and append ad
         env:
@@ -46,7 +66,25 @@ jobs:
           git add index.html .coupang_last_result.json
           if git diff --cached --quiet; then
             echo 'No index.html change was necessary.'
-            exit 0
+          else
+            git commit -m 'Add Coupang Partners ad'
+            git push origin main
           fi
-          git commit -m 'Add Coupang Partners ad'
-          git push origin main
+
+      - name: Complete issue request
+        if: github.event_name == 'issues' && success()
+        uses: actions/github-script@v7
+        with:
+          script: |
+            await github.rest.issues.createComment({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              issue_number: context.issue.number,
+              body: '쿠팡 파트너스 링크 변환 및 광고 추가가 완료되었습니다.'
+            });
+            await github.rest.issues.update({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              issue_number: context.issue.number,
+              state: 'closed'
+            });
