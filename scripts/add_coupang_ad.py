@@ -14,6 +14,7 @@ from pathlib import Path
 
 API_HOST = "https://api-gateway.coupang.com"
 DEEPLINK_PATH = "/v2/providers/affiliate_open_api/apis/openapi/v1/deeplink"
+SEARCH_PATH = "/v2/providers/affiliate_open_api/apis/openapi/products/search"
 
 
 def make_auth(access_key: str, secret_key: str) -> str:
@@ -91,6 +92,65 @@ def convert_to_deeplink(coupang_url: str) -> str:
     return item.get("shortenUrl") or item.get("landingUrl") or ""
 
 
+def make_get_auth(access_key: str, secret_key: str, path: str, query: str) -> str:
+    now = datetime.datetime.now(datetime.timezone.utc)
+    signed_date = now.strftime("%y%m%dT%H%M%SZ")
+    message = signed_date + "GET" + path + query
+    signature = hmac.new(secret_key.encode("utf-8"), message.encode("utf-8"), hashlib.sha256).hexdigest()
+    return (
+        "CEA algorithm=HmacSHA256, "
+        f"access-key={access_key}, signed-date={signed_date}, signature={signature}"
+    )
+
+
+def fetch_partner_product_name(coupang_url: str) -> str:
+    """Get productName from Coupang Partners product-search API only on exact productId match."""
+    m = re.search(r"/vp/products/(\d+)", coupang_url)
+    if not m:
+        return ""
+    target_product_id = m.group(1)
+
+    parsed = urllib.parse.urlparse(coupang_url)
+    keyword = urllib.parse.parse_qs(parsed.query).get("q", [""])[0].strip()
+    keyword = urllib.parse.unquote_plus(keyword) if keyword else ""
+    if not keyword:
+        return ""
+
+    access_key = os.environ.get("COUPANG_ACCESS_KEY", "").strip()
+    secret_key = os.environ.get("COUPANG_SECRET_KEY", "").strip()
+    if not access_key or not secret_key:
+        return ""
+
+    query = urllib.parse.urlencode({"keyword": keyword, "limit": 10})
+    req = urllib.request.Request(
+        API_HOST + SEARCH_PATH + "?" + query,
+        method="GET",
+        headers={
+            "Authorization": make_get_auth(access_key, secret_key, SEARCH_PATH, query),
+            "Content-Type": "application/json;charset=UTF-8",
+        },
+    )
+    try:
+        with urllib.request.urlopen(req, timeout=30) as resp:
+            payload = json.loads(resp.read().decode("utf-8"))
+    except Exception as exc:
+        print(f"Partners product search skipped: {exc}")
+        return ""
+
+    data = payload.get("data") or {}
+    products = data.get("productData") or [] if isinstance(data, dict) else []
+    for item in products:
+        if not isinstance(item, dict):
+            continue
+        if str(item.get("productId", "")) == target_product_id:
+            name = clean_product_title(str(item.get("productName") or ""))
+            if name:
+                print(f"Product name resolved from Coupang Partners API: {name}")
+                return name
+    print(f"Exact productId {target_product_id} not present in Partners search results for keyword: {keyword}")
+    return ""
+
+
 def clean_product_title(value: str) -> str:
     value = html.unescape(value or "")
     value = re.sub(r"\s+", " ", value).strip()
@@ -163,6 +223,9 @@ def derive_product_name(coupang_url: str, request_data: dict, raw_text: str) -> 
         or request_data.get("title")
         or ""
     ).strip()
+
+    if not product_name:
+        product_name = fetch_partner_product_name(coupang_url)
 
     if not product_name:
         product_name = extract_title_from_pasted_text(raw_text)
