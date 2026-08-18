@@ -37,16 +37,12 @@ jobs:
             python - <<'PY'
           import json, os, re
           body = os.environ.get('ISSUE_BODY', '')
-          if 'ACTION:REMOVE_LAST_11_TEST_ADS' in body:
-              payload = {'action': 'remove_last_test_ads'}
-          else:
-              m = re.search(r'https://(?:www|link)\.coupang\.com/\S+', body)
-              if not m:
-                  raise SystemExit('No Coupang URL found in issue body.')
-              url = m.group(0).strip().rstrip('.,)]}>\"\'')
-              payload = {'url': url, 'rawText': body}
+          m = re.search(r'https://(?:www|link)\.coupang\.com/\S+', body)
+          if not m:
+              raise SystemExit('No Coupang URL found in issue body.')
+          url = m.group(0).strip().rstrip('.,)]}>\"\'')
           with open('/tmp/coupang_request.json', 'w', encoding='utf-8') as f:
-              json.dump(payload, f, ensure_ascii=False)
+              json.dump({'url': url, 'rawText': body}, f, ensure_ascii=False)
           PY
             echo "file=/tmp/coupang_request.json" >> "$GITHUB_OUTPUT"
           else
@@ -54,19 +50,12 @@ jobs:
             echo "file=$REQUEST_FILE" >> "$GITHUB_OUTPUT"
           fi
 
-      - name: Process Coupang request
+      - name: Convert URL and append ad
         env:
           COUPANG_ACCESS_KEY: ${{ secrets.COUPANG_ACCESS_KEY }}
           COUPANG_SECRET_KEY: ${{ secrets.COUPANG_SECRET_KEY }}
         run: |
-          set -euo pipefail
-          REQUEST_FILE="${{ steps.request.outputs.file }}"
-          ACTION="$(python -c "import json; print(json.load(open('$REQUEST_FILE', encoding='utf-8')).get('action',''))")"
-          if [ "$ACTION" = "remove_last_test_ads" ]; then
-            python scripts/remove_last_11_test_ads.py
-          else
-            python scripts/add_coupang_ad.py "$REQUEST_FILE"
-          fi
+          python scripts/add_coupang_ad.py "${{ steps.request.outputs.file }}"
 
       - name: Commit index.html update
         shell: bash
@@ -78,7 +67,7 @@ jobs:
           if git diff --cached --quiet; then
             echo 'No index.html change was necessary.'
           else
-            git commit -m 'Update Coupang ads'
+            git commit -m 'Add Coupang Partners ad'
             git push origin main
           fi
 
