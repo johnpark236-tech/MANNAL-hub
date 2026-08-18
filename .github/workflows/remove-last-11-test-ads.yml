@@ -1,4 +1,5 @@
 name: Remove Last 11 Test Ads
+# trigger: 2
 on:
   push:
     branches: [main]
