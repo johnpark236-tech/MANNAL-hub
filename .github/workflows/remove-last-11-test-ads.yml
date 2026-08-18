@@ -1,10 +1,9 @@
 name: Remove Last 11 Test Ads
-# trigger: 2
 on:
   push:
     branches: [main]
     paths:
-      - '.github/workflows/remove-last-11-test-ads.yml'
+      - 'scripts/remove_last_11_test_ads.py'
 permissions:
   contents: write
 jobs:
