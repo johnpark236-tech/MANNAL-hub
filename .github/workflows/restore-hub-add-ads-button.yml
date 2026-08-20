@@ -1,0 +1,25 @@
+name: Restore HUB And Add Ads Only Button
+on:
+  push:
+    branches: [main]
+    paths:
+      - 'maintenance_requests/restore_hub_add_ads_button_20260820.txt'
+permissions:
+  contents: write
+jobs:
+  patch:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: main
+      - name: Patch index.html
+        run: python scripts/restore_hub_add_ads_button.py
+      - name: Commit index update
+        run: |
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add index.html
+          git diff --cached --quiet && exit 0
+          git commit -m 'Restore HUB and add ads-only button'
+          git push origin main
