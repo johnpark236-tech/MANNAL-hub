@@ -1,0 +1,1 @@
+Run one-time UI cleanup: hide the three learning buttons and Coupang uploader via HTML comments, and rename the Korean learning heading to 한국어 교재 추천합니다.
