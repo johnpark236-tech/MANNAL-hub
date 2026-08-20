@@ -46,25 +46,24 @@ jobs:
           PY
             echo "file=/tmp/coupang_request.json" >> "$GITHUB_OUTPUT"
           else
-            REQUEST_FILE="$(ls -1t coupang_requests/*.json | head -n 1)"
+            REQUEST_FILE="$(git diff-tree --no-commit-id --name-only -r "$GITHUB_SHA" -- 'coupang_requests/*.json' | head -n 1)"
+            if [ -z "$REQUEST_FILE" ] || [ ! -f "$REQUEST_FILE" ]; then
+              echo 'No usable Coupang request file found in this push.'
+              exit 0
+            fi
             echo "file=$REQUEST_FILE" >> "$GITHUB_OUTPUT"
           fi
 
-      - name: Process Coupang request
+      - name: Convert URL and append ad
+        if: steps.request.outputs.file != ''
         env:
           COUPANG_ACCESS_KEY: ${{ secrets.COUPANG_ACCESS_KEY }}
           COUPANG_SECRET_KEY: ${{ secrets.COUPANG_SECRET_KEY }}
         run: |
-          set -euo pipefail
-          REQUEST_FILE="${{ steps.request.outputs.file }}"
-          ACTION="$(python -c "import json; print(json.load(open('$REQUEST_FILE', encoding='utf-8')).get('action',''))")"
-          if [ "$ACTION" = "keep_textbook_ads_only" ]; then
-            python scripts/keep_textbook_ads.py
-          else
-            python scripts/add_coupang_ad.py "$REQUEST_FILE"
-          fi
+          python scripts/add_coupang_ad.py "${{ steps.request.outputs.file }}"
 
       - name: Commit index.html update
+        if: steps.request.outputs.file != ''
         shell: bash
         run: |
           set -euo pipefail
@@ -74,7 +73,7 @@ jobs:
           if git diff --cached --quiet; then
             echo 'No index.html change was necessary.'
           else
-            git commit -m 'Keep textbook Coupang ads only'
+            git commit -m 'Add Coupang Partners ad'
             git push origin main
           fi
 
