@@ -50,12 +50,19 @@ jobs:
             echo "file=$REQUEST_FILE" >> "$GITHUB_OUTPUT"
           fi
 
-      - name: Convert URL and append ad
+      - name: Process Coupang request
         env:
           COUPANG_ACCESS_KEY: ${{ secrets.COUPANG_ACCESS_KEY }}
           COUPANG_SECRET_KEY: ${{ secrets.COUPANG_SECRET_KEY }}
         run: |
-          python scripts/add_coupang_ad.py "${{ steps.request.outputs.file }}"
+          set -euo pipefail
+          REQUEST_FILE="${{ steps.request.outputs.file }}"
+          ACTION="$(python -c "import json; print(json.load(open('$REQUEST_FILE', encoding='utf-8')).get('action',''))")"
+          if [ "$ACTION" = "keep_textbook_ads_only" ]; then
+            python scripts/keep_textbook_ads.py
+          else
+            python scripts/add_coupang_ad.py "$REQUEST_FILE"
+          fi
 
       - name: Commit index.html update
         shell: bash
@@ -67,7 +74,7 @@ jobs:
           if git diff --cached --quiet; then
             echo 'No index.html change was necessary.'
           else
-            git commit -m 'Add Coupang Partners ad'
+            git commit -m 'Keep textbook Coupang ads only'
             git push origin main
           fi
 
