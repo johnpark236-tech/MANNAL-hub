@@ -932,7 +932,7 @@
             if (resp.status === 401 || data.code === 'BAD_PASSWORD') {
               throw new Error('업로드 서버의 비밀번호 인증이 아직 활성화되어 있습니다.');
             }
-            throw new Error(data.message || '업로드 요청에 실패했습니다.');
+            throw new Error(data.detail ? `${data.message || '업로드 요청에 실패했습니다.'} (${data.detail})` : (data.message || '업로드 요청에 실패했습니다.'));
           }
 
           await pollUntilComplete(data.issueNumber);
