@@ -918,38 +918,36 @@
           return;
         }
 
-        askPassword(async (password) => {
-          button.disabled = true;
-          status.textContent = '업로드 요청 중...';
-          showLoading();
-          try {
-            const resp = await fetch(`${WORKER_URL}/upload`, {
-              method: 'POST',
-              headers: { 'Content-Type': 'application/json' },
-              body: JSON.stringify({ password, text: raw })
-            });
-            const data = await resp.json().catch(() => ({}));
-            if (!resp.ok || data.success === false) {
-              if (resp.status === 401 || data.code === 'BAD_PASSWORD') {
-                throw new Error('비밀번호가 올바르지 않습니다.');
-              }
-              throw new Error(data.message || '업로드 요청에 실패했습니다.');
+        button.disabled = true;
+        status.textContent = '업로드 요청 중...';
+        showLoading();
+        try {
+          const resp = await fetch(`${WORKER_URL}/upload`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ text: raw })
+          });
+          const data = await resp.json().catch(() => ({}));
+          if (!resp.ok || data.success === false) {
+            if (resp.status === 401 || data.code === 'BAD_PASSWORD') {
+              throw new Error('업로드 서버의 비밀번호 인증이 아직 활성화되어 있습니다.');
             }
-
-            await pollUntilComplete(data.issueNumber);
-            status.textContent = '업로드가 완료되었습니다.';
-            showMessage('완료', '업로드가 완료되었습니다.', () => {
-              const u = new URL(window.location.href);
-              u.searchParams.set('_refresh', Date.now().toString());
-              window.location.href = u.toString();
-            });
-          } catch (err) {
-            status.textContent = err && err.message ? err.message : '업로드 중 오류가 발생했습니다.';
-            showMessage('업로드 실패', status.textContent);
-          } finally {
-            button.disabled = false;
+            throw new Error(data.message || '업로드 요청에 실패했습니다.');
           }
-        });
+
+          await pollUntilComplete(data.issueNumber);
+          status.textContent = '업로드가 완료되었습니다.';
+          showMessage('완료', '업로드가 완료되었습니다.', () => {
+            const u = new URL(window.location.href);
+            u.searchParams.set('_refresh', Date.now().toString());
+            window.location.href = u.toString();
+          });
+        } catch (err) {
+          status.textContent = err && err.message ? err.message : '업로드 중 오류가 발생했습니다.';
+          showMessage('업로드 실패', status.textContent);
+        } finally {
+          button.disabled = false;
+        }
       });
     })();
   </script>
