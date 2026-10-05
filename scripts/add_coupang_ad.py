@@ -227,11 +227,14 @@ def derive_product_name(coupang_url: str, request_data: dict, raw_text: str) -> 
     if not product_name:
         product_name = extract_title_from_pasted_text(raw_text)
 
-    if not product_name:
-        product_name = fetch_partner_product_name(coupang_url)
-
+    # For direct Coupang product URLs, prefer the actual page title over the
+    # search keyword (for example q=뷰티). This preserves the full product name
+    # such as "닥터지 블랙 스네일크림, 50ml, 5개".
     if not product_name:
         product_name = fetch_product_title(coupang_url)
+
+    if not product_name:
+        product_name = fetch_partner_product_name(coupang_url)
 
     if not product_name:
         parsed = urllib.parse.urlparse(coupang_url)
