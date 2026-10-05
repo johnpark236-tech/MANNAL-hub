@@ -909,7 +909,7 @@
         throw new Error('업로드 요청은 접수되었지만 완료 확인 시간이 초과되었습니다. GitHub Actions 상태를 확인해주세요.');
       }
 
-      button.addEventListener('click', function () {
+      button.addEventListener('click', async function () {
         const raw = input.value.trim();
         const url = extractCoupangUrl(raw);
         if (!url) {
