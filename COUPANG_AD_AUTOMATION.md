@@ -6,6 +6,8 @@
 ## 고정 처리 규칙
 1. 입력은 `https://www.coupang.com/...` 형식의 일반 쿠팡 상품 URL을 사용한다.
 2. 일반 쿠팡 URL을 그대로 광고 링크로 게시하지 않는다.
+   - `link.coupang.com` 링크(타인 파트너스 링크, 앱 공유 링크 포함)도 그대로 게시하지 않는다. 리다이렉트를 따라 원래 상품 주소로 풀고, `lptag`·`subId`·`traceid` 등 추적 파라미터를 제거한 뒤 내 키로 다시 Deeplink 변환한다.
+   - 상품 주소로 풀지 못하면 광고를 게시하지 않고 실패 처리한다.
 3. GitHub Repository Secrets에 등록된 `COUPANG_ACCESS_KEY`, `COUPANG_SECRET_KEY`를 사용하여 쿠팡파트너스 Deeplink API로 변환한다.
 4. Access Key와 Secret Key의 실제 값은 소스, HTML, JSON 요청 파일, 커밋 메시지, Actions 로그에 절대로 기록하지 않는다.
 5. 변환 결과의 파트너스 URL만 `index.html`에 게시한다.

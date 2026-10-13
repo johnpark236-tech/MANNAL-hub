@@ -59,9 +59,106 @@ def extract_title_from_pasted_text(raw_text: str) -> str:
     return candidates[-1] if candidates else ""
 
 
+BROWSER_HEADERS = {
+    "User-Agent": (
+        "Mozilla/5.0 (Windows NT 10.0; Win64; x64) "
+        "AppleWebKit/537.36 (KHTML, like Gecko) "
+        "Chrome/131.0.0.0 Safari/537.36"
+    ),
+    "Accept-Language": "ko-KR,ko;q=0.9,en-US;q=0.8,en;q=0.7",
+    "Accept": "text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8",
+}
+
+
+class _NoRedirect(urllib.request.HTTPRedirectHandler):
+    def redirect_request(self, req, fp, code, msg, headers, newurl):
+        return None
+
+
+def _is_coupang_host(url: str) -> bool:
+    host = (urllib.parse.urlparse(url).hostname or "").lower()
+    return host == "coupang.com" or host.endswith(".coupang.com")
+
+
+def build_clean_product_url(url: str) -> str:
+    """Rebuild a plain www.coupang.com product URL with every affiliate/tracking
+    parameter (lptag, subId, traceid, ...) removed, so the Deeplink API issues a
+    link that belongs to this site's own Partners account."""
+    parsed = urllib.parse.urlparse(url)
+    m = re.search(r"/vp/products/(\d+)", parsed.path)
+    if not m:
+        return ""
+    qs = urllib.parse.parse_qs(parsed.query)
+    keep = {}
+    for key in ("itemId", "vendorItemId", "q"):
+        if qs.get(key) and qs[key][0].strip():
+            keep[key] = qs[key][0].strip()
+    clean = f"https://www.coupang.com/vp/products/{m.group(1)}"
+    if keep:
+        clean += "?" + urllib.parse.urlencode(keep)
+    return clean
+
+
+def resolve_short_link(short_url: str, max_hops: int = 6) -> str:
+    """Follow link.coupang.com redirects one hop at a time (without loading the
+    final product page) until a /vp/products/<id> URL appears."""
+    opener = urllib.request.build_opener(_NoRedirect)
+    current = short_url
+    for _ in range(max_hops):
+        if "/vp/products/" in current:
+            return current
+        req = urllib.request.Request(current, headers=BROWSER_HEADERS)
+        location = ""
+        body = ""
+        try:
+            with opener.open(req, timeout=15) as resp:
+                body = resp.read(300_000).decode("utf-8", errors="replace")
+        except urllib.error.HTTPError as e:
+            if e.code in (301, 302, 303, 307, 308):
+                location = e.headers.get("Location", "")
+            else:
+                raise RuntimeError(f"Short link lookup failed: HTTP {e.code}") from None
+
+        if not location and body:
+            # Some short links answer 200 with a meta-refresh / JS redirect.
+            m = re.search(r"https?://(?:www\.|m\.)?coupang\.com/vp/products/\d+[^\"'\s<>]*", body)
+            if m:
+                location = html.unescape(m.group(0))
+        if not location:
+            break
+        current = urllib.parse.urljoin(current, location)
+        if not _is_coupang_host(current):
+            raise RuntimeError("Short link redirected outside coupang.com.")
+    if "/vp/products/" in current:
+        return current
+    return ""
+
+
+def to_product_url(coupang_url: str) -> str:
+    """Return a clean www.coupang.com product URL for any accepted input.
+    link.coupang.com links (someone else's Partners link or an app share link)
+    are unwrapped so they can be re-issued with our own keys."""
+    if coupang_url.startswith("https://link.coupang.com/"):
+        resolved = ""
+        try:
+            resolved = resolve_short_link(coupang_url)
+        except Exception as exc:
+            print(f"Short link resolution failed: {exc}")
+        clean = build_clean_product_url(resolved) if resolved else ""
+        if not clean:
+            raise RuntimeError(
+                "Could not unwrap the link.coupang.com URL into a product URL. "
+                "The ad was NOT posted, so no non-owned link goes live. "
+                "Please paste the www.coupang.com product URL instead."
+            )
+        print(f"Unwrapped short link to product URL: {clean}")
+        return clean
+    return build_clean_product_url(coupang_url) or coupang_url
+
+
 def convert_to_deeplink(coupang_url: str) -> str:
     if coupang_url.startswith("https://link.coupang.com/"):
-        return coupang_url
+        raise RuntimeError("convert_to_deeplink needs a www.coupang.com URL; call to_product_url first.")
 
     access_key = os.environ.get("COUPANG_ACCESS_KEY", "").strip()
     secret_key = os.environ.get("COUPANG_SECRET_KEY", "").strip()
@@ -307,11 +404,12 @@ def main() -> None:
     ):
         raise RuntimeError("Request must contain a valid Coupang URL beginning with https://.")
 
-    affiliate_url = convert_to_deeplink(coupang_url)
+    product_url = to_product_url(coupang_url)
+    affiliate_url = convert_to_deeplink(product_url)
     if not affiliate_url:
         raise RuntimeError("Coupang API returned no affiliate URL.")
 
-    product_name = derive_product_name(coupang_url, data, raw_text)
+    product_name = derive_product_name(product_url, data, raw_text)
     category, color_class, icon_class = choose_ad_icon(product_name)
     append_ad(Path("index.html"), affiliate_url, product_name, color_class, icon_class)
 
